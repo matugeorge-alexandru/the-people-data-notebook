@@ -83,8 +83,10 @@ To simplify the interpretation of the ANOVA tests, we can reduce the number of p
 # ------------------------------------------------------------
 glimpse(df)
 ```
+
 ::: {.callout-tip collapse="true"}
 ## Summary for all variables
+
 ```{r}
 #| label: Explore-and-Recode-2
 #| echo: true
@@ -97,7 +99,6 @@ glimpse(df)
 # ------------------------------------------------------------
 summary(df)
 ```
-
 :::
 
 ```{r}
@@ -120,7 +121,6 @@ df |>
     caption = "Table 1: Distribution of performance ratings")
 
 ```
-
 
 One important step for an ANOVA test is to clearly define the groups among which we will be doing the comparisons. In R, the easiest way to do this is to convert the variable of interest 'Performance' into a factor. We can also quickly check that the re-coding worked as intended.
 
@@ -164,15 +164,16 @@ df |>
 ## Data Analysis & Results
 
 ### Descriptive Statistics
+
 While in this case the purpose and methods of the analysis were pre-defined, it can never be a bad idea to explore your data in order to understand it and notice any unexpected pattern.
 
 The average engagement scores by performance groups shows that:
 
- - for Overall Engagement and  Accomplishment, engagement increases with Performance;
- - for Goals and Peer Support, the averages are quite similar across Low, Medium and High performers;
- - Low performers are on average more satisfied with their Manager Relation, compared to the other performance groups;
- - High performers are on average more satisfied with their Rewards, compared to the employees in the other performance groups.
- 
+-   for Overall Engagement and Accomplishment, engagement increases with Performance;
+-   for Goals and Peer Support, the averages are quite similar across Low, Medium and High performers;
+-   Low performers are on average more satisfied with their Manager Relation, compared to the other performance groups;
+-   High performers are on average more satisfied with their Rewards, compared to the employees in the other performance groups.
+
 ```{r}
 #| label: Descriptive table
 #| message: false
@@ -212,16 +213,24 @@ kable(
   caption = "Table 2: Descriptive statistics (N, Mean, SD) by Performance group")
 
 ```
-In the next section we will test if any of these differences are statistically significant or simply due to random variation. 
 
+In the next section we will test if any of these differences are statistically significant or simply due to random variation.
 
 ### ANOVA: Interpreting the results
-To interpret the results of a one-way ANOVA appropriately, three aspects should be considered: 
 
-- (i) the distribution of the outcome variable across the comparison groups, to understand the underlying group patterns (chart below);
-- (ii) the overall ANOVA test statistic, which assesses whether any statistically significant differences exist between group means (Table 3);
-- (iii) the post-hoc pairwise comparisons, which identify where those differences stand and confirm whether the observed effects align with the expected group averages (Table 4);.
+To interpret the results of a one-way ANOVA appropriately, three aspects should be considered:
 
+-   
+
+    (i) the distribution of the outcome variable across the comparison groups, to understand the underlying group patterns (chart below);
+
+-   
+
+    (ii) the overall ANOVA test statistic, which assesses whether any statistically significant differences exist between group means (Table 3);
+
+-   
+
+    (iii) the post-hoc pairwise comparisons, which identify where those differences stand and confirm whether the observed effects align with the expected group averages (Table 4);.
 
 ### Overall Engagement vs Performance
 
@@ -261,7 +270,7 @@ chart1<-df|>
           subtitle = "(95% bootstrap confidence intervals for the mean)") 
 
 ```
-::: 
+:::
 
 ```{r}
 #| label: chart1
@@ -277,8 +286,7 @@ chart1
 
 ```
 
-For the current dataset, **Engagement** differs significantly across performance groups (F(2,997)=22.50, p<.001, η²=0.04). High performers report higher engagement than both medium and low performers, with all pairwise differences statistically significant. However, the effect size is modest, suggesting engagement explains only a small share of performance differences.
-
+For the current dataset, **Engagement** differs significantly across performance groups (F(2,997)=22.50, p\<.001, η²=0.04). High performers report higher engagement than both medium and low performers, with all pairwise differences statistically significant. However, the effect size is modest, suggesting engagement explains only a small share of performance differences.
 
 ```{r}
 #| label: ANOVA table
@@ -327,14 +335,11 @@ kable(
 
 ```
 
+Perceived **Accomplishment** shows the strongest differences by performance group (F(2,997)=64.80, p\<.001, η²=0.12). High performers report substantially higher accomplishment than medium and low performers, and medium performers also score higher than low performers.This represents a moderate effect, indicating accomplishment is closely associated with performance outcomes.
 
-Perceived **Accomplishment** shows the strongest differences by performance group (F(2,997)=64.80, p<.001, η²=0.12). High performers report substantially higher accomplishment than medium and low performers, and medium performers also score higher than low performers.This represents a moderate effect, indicating accomplishment is closely associated with performance outcomes.
+**Manager relations** vary significantly by performance group (F(2,997)=9.48, p\<.001, η²=0.02). Low performers report better manager relations than both medium and high performers, while no meaningful difference is observed between medium and high performers.Overall, the effect is small, suggesting limited practical impact despite statistical significance.
 
-**Manager relations** vary significantly by performance group (F(2,997)=9.48, p<.001, η²=0.02).
-Low performers report better manager relations than both medium and high performers, while no meaningful difference is observed between medium and high performers.Overall, the effect is small, suggesting limited practical impact despite statistical significance.
-
-Perceptions of **Rewards** differ significantly across performance groups (F(2,997)=14.75, p<.001, η²=0.03). High performers report higher rewards than both low and medium performers, while no significant difference is observed between low and medium performers. The effect size is also small.
-
+Perceptions of **Rewards** differ significantly across performance groups (F(2,997)=14.75, p\<.001, η²=0.03). High performers report higher rewards than both low and medium performers, while no significant difference is observed between low and medium performers. The effect size is also small.
 
 ```{r}
 #| label: Post-hoc table
@@ -476,7 +481,6 @@ chart_grid <- ggplot(df_long, aes(x = Performance, y = Score, colour = Performan
 ```
 :::
 
-
 ```{r}
 #| label: chart_grid
 #| fig-width: 9
@@ -493,19 +497,15 @@ chart_grid
 
 ## Conclusion & Recommendations
 
-
 ### Conclusion
-The results provide evidence of a performance culture in which higher performance is associated with higher engagement and a stronger sense of accomplishment. 
+
+The results provide evidence of a performance culture in which higher performance is associated with higher engagement and a stronger sense of accomplishment.
 
 However, the findings also point to potential imbalances. While top performers are rewarded more, medium performers (representing 52% of the workforce) do not appear to be clearly differentiated from low performers in terms of rewards. In addition, lower-performing employees report more positive manager relations, which may indicate that managerial attention is disproportionately focused on performance remediation rather than sustained engagement across all performance levels.
 
 ### Recommendations
 
-- **Sustain engagement and accomplishment among top performers:**
-The strong association between performance, engagement, and accomplishment suggests that existing practices supporting autonomy, mastery, and meaningful work should be maintained and reinforced for high performers.
-- **Re-examine reward differentiation for medium performers:**
-The lack of meaningful reward differences between low and medium performers may weaken motivation in the middle of the performance distribution. Introducing clearer performance-linked recognition for medium performers could help prevent disengagement and performance stagnation.
-- **Balance managerial attention across performance groups:**
-While supporting low performers is important, the stronger manager relations reported by low performers suggest a potential over-correction. Managers should be encouraged to invest equally in coaching and development conversations with medium and high performers to sustain long-term engagement.
-- **Use engagement metrics as an early warning indicator:**
-Given the modest but consistent link between engagement and performance, monitoring engagement trends by performance group can help identify emerging misalignments between performance management practices and employee experience before they affect outcomes.
+-   **Sustain engagement and accomplishment among top performers:** The strong association between performance, engagement, and accomplishment suggests that existing practices supporting autonomy, mastery, and meaningful work should be maintained and reinforced for high performers.
+-   **Re-examine reward differentiation for medium performers:** The lack of meaningful reward differences between low and medium performers may weaken motivation in the middle of the performance distribution. Introducing clearer performance-linked recognition for medium performers could help prevent disengagement and performance stagnation.
+-   **Balance managerial attention across performance groups:** While supporting low performers is important, the stronger manager relations reported by low performers suggest a potential over-correction. Managers should be encouraged to invest equally in coaching and development conversations with medium and high performers to sustain long-term engagement.
+-   **Use engagement metrics as an early warning indicator:** Given the modest but consistent link between engagement and performance, monitoring engagement trends by performance group can help identify emerging misalignments between performance management practices and employee experience before they affect outcomes.
