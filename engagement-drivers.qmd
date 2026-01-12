@@ -1,0 +1,11 @@
+---
+title: "Analyzing Employee Engagement Surveys: Main Drivers of Engagement"
+---
+
+*How do you choose action areas when all survey themes seem important?*
+
+::: callout-note
+🚧 **Content in progress**\
+This case study will explore how to identify meaningful engagement drivers while avoiding common analytical traps.\
+All examples will use synthetic data created for demonstration purposes.
+:::

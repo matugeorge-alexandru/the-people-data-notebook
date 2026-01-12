@@ -1,0 +1,11 @@
+---
+title: "Building a Performance Culture II"
+---
+
+*Are your top performers fairly rewarded?*
+
+::: callout-note
+🚧 **Content in progress**\
+This case study will look at reward differentiation, fairness, and performance signals, highlighting how data can inform compensation decisions responsibly.\
+All examples will rely on synthetic data.
+:::

@@ -1,0 +1,511 @@
+---
+title: "Building a Performance Culture I"
+subtitle: "Are your top performers more engaged?"
+toc: true
+format:
+  html:
+    lightbox: true
+---
+
+![](images/performance-culture.png)
+
+## Executive summary
+
+This case study provides step-by-step instructions in R on how you can test the relationship between employee performance ratings and engagement survey results within your company, in order to understand whether top performers are also the most engaged employees.
+
+## Context & Business Question
+
+The positive impact of employee engagement on employee performance has already been extensively documented in the literature, for example [*here*](https://www.academia.edu/download/77045834/6332.pdf), [*here*](https://doi.org/10.1108/IJPPM-01-2013-0008) or [*here*](https://www.gallup.com/workplace/285674/improve-employee-engagement-workplace.aspx).
+
+This means that the relationship between engagement and performance can represent a good indicator of the performance culture in your organisation. While companies often assume that high-performing employees are also highly engaged, putting this assumption to the statistical test can provide surprising insights and act as an early warning sign of misalignment between performance management and employee experience.
+
+## Data Overview & Methodology
+
+The analysis uses *fully synthetic data* for 1000 employees, including **employee level** data for **performance ratings** and **engagement survey responses**. All data was generated in R.
+
+The database sample file includes the following columns:
+
+-   PerformanceRatings: manager ratings of each employee, for a performance review cycle, scale 1-5, where 5 means a higher performance level;
+-   Engagement: overall employee engagement, average of multiple questions, NPS scale 0-10;
+-   Rewards: driver of engagement measuring employee satisfaction with compensation & rewards, average of multiple questions, NPS scale 0-10;
+-   Accomplishment: driver of engagement measuring employee sense of accomplishment in daily work, average of multiple questions, NPS scale 0-10;
+-   ManagerRelations: driver of engagement measuring employee satisfaction with managerial support they receive, average of multiple questions, NPS scale 0-10;
+-   Goals: driver of engagement measuring employee clarity of their work goals, average of multiple questions, NPS scale 0-10;
+-   PeerSupport: driver of engagement measuring employee satisfaction with peer support they receive from the team, average of multiple questions, NPS scale 0-10;
+
+For testing the relationship between engagement and performance I conduct a series of one-way ANOVA tests, analyzing if a more positive employee sentiment (overall Engagement and other drivers of engagement) is reported among the top performing employees.
+
+## Data Import and Transformations
+
+First things first: we just need to import the needed packages/ libraries and read the .csv file into our R environment.
+
+```{r}
+#| label: Import libraries
+#| echo: true
+#| message: false
+#| warning: false
+#| paged-print: false
+# ------------------------------------------------------------
+# Import needed R packages
+# ------------------------------------------------------------
+library(tidyverse)
+library(Hmisc) 
+library(broom)
+library(knitr)
+```
+
+```{r}
+#| label: Read data
+#| echo: true
+#| message: false
+#| warning: false
+#| paged-print: false
+
+# ------------------------------------------------------------
+# Read the data
+# ------------------------------------------------------------
+df<-read_csv("data/performance_engagement_synthetic.csv")
+```
+
+A quick glimpse at our data shows us that all our employee engagement survey variables are looking as expected: numeric variables, on a 0-10 scale.
+
+To simplify the interpretation of the ANOVA tests, we can reduce the number of performance groups from 5 to 3 groups, by joining together the 1 & 2 ratings ('Low Performers') and the 4 & 5 ratings ('High performers'), while the performance rating equals to 3 becomes 'Medium performers'. This decision is also supported by the overall performance distribution (18% Low performers, 52% Medium performers, 30% High performers), ensuring a big enoug sample size in each group.
+
+```{r}
+#| label: Explore and Recode
+#| echo: true
+#| message: false
+#| warning: false
+#| paged-print: false
+
+# ------------------------------------------------------------
+# Explore the data structure
+# ------------------------------------------------------------
+glimpse(df)
+```
+::: {.callout-tip collapse="true"}
+## Summary for all variables
+```{r}
+#| label: Explore-and-Recode-2
+#| echo: true
+#| message: false
+#| warning: false
+#| paged-print: false
+
+# ------------------------------------------------------------
+# Summary for all variables
+# ------------------------------------------------------------
+summary(df)
+```
+
+:::
+
+```{r}
+#| label: Explore and Recode 3
+#| echo: true
+#| message: false
+#| warning: false
+#| paged-print: false
+#| code-fold: true
+
+# ------------------------------------------------------------
+# Understand the performance distribution
+# ------------------------------------------------------------
+df |>
+  count(PerformanceRatings) |>
+  mutate(Percentage = n / sum(n) * 100) |>
+  knitr::kable(
+    col.names = c("Performance rating", "Count", "Percentage (%)"),
+    digits = 1,
+    caption = "Table 1: Distribution of performance ratings")
+
+```
+
+
+One important step for an ANOVA test is to clearly define the groups among which we will be doing the comparisons. In R, the easiest way to do this is to convert the variable of interest 'Performance' into a factor. We can also quickly check that the re-coding worked as intended.
+
+::: {.callout-tip collapse="true"}
+## Recode performance ratings and validate re-coding
+
+```{r}
+#| label: Explore and Recode 4
+#| echo: true
+#| message: false
+#| code-overflow: wrap
+#| warning: false
+#| paged-print: false
+# ------------------------------------------------------------
+#  Re-code performance: form 1 to 5 into 3 performance categories
+# ------------------------------------------------------------
+df$Performance <- ifelse(df$PerformanceRatings %in% c(1, 2), "Low performers",
+                       ifelse(df$PerformanceRatings == 3, "Medium performers", "High performers"))
+
+df$Performance <- factor(df$Performance, levels = c("Low performers", "Medium performers", "High performers"))
+
+```
+
+```{r}
+#| label: Explore and Recode III
+#| echo: true
+#| message: false
+#| warning: false
+#| paged-print: false
+
+# ------------------------------------------------------------
+# Validate the re-coding
+# ------------------------------------------------------------
+df |>
+  select(PerformanceRatings, Performance) |>
+  head(5)
+
+```
+:::
+
+## Data Analysis & Results
+
+### Descriptive Statistics
+While in this case the purpose and methods of the analysis were pre-defined, it can never be a bad idea to explore your data in order to understand it and notice any unexpected pattern.
+
+The average engagement scores by performance groups shows that:
+
+ - for Overall Engagement and  Accomplishment, engagement increases with Performance;
+ - for Goals and Peer Support, the averages are quite similar across Low, Medium and High performers;
+ - Low performers are on average more satisfied with their Manager Relation, compared to the other performance groups;
+ - High performers are on average more satisfied with their Rewards, compared to the employees in the other performance groups.
+ 
+```{r}
+#| label: Descriptive table
+#| message: false
+#| warning: false
+#| paged-print: false
+#| code-fold: true
+# ------------------------------------------------------------
+# Build 2 helper variables: 1st to  use Performance as the grouping variable and 2nd to select all the drivers of engagement
+# ------------------------------------------------------------
+group_var <- "Performance"
+
+drivers <- c(
+  "Engagement",
+  "Rewards",
+  "Accomplishment",
+  "ManagerRelations",
+  "Goals",
+  "PeerSupport")
+
+# ------------------------------------------------------------
+# Create and format Table 2: Descriptive Statistics (N, Mean, SD) by Performance group
+# ------------------------------------------------------------
+desc_table <- df |>
+  select(Performance, all_of(drivers)) |>
+  pivot_longer(all_of(drivers), names_to = "Driver", values_to = "Score") |>
+  group_by(Driver, Performance) |>
+  summarise(
+    N = sum(!is.na(Score)),
+    Mean = mean(Score, na.rm = TRUE),
+    SD = sd(Score, na.rm = TRUE),
+    .groups = "drop") |>
+  arrange(Driver, Performance)
+
+kable(
+  desc_table,
+  digits = 2,
+  caption = "Table 2: Descriptive statistics (N, Mean, SD) by Performance group")
+
+```
+In the next section we will test if any of these differences are statistically significant or simply due to random variation. 
+
+
+### ANOVA: Interpreting the results
+To interpret the results of a one-way ANOVA appropriately, three aspects should be considered: 
+
+- (i) the distribution of the outcome variable across the comparison groups, to understand the underlying group patterns (chart below);
+- (ii) the overall ANOVA test statistic, which assesses whether any statistically significant differences exist between group means (Table 3);
+- (iii) the post-hoc pairwise comparisons, which identify where those differences stand and confirm whether the observed effects align with the expected group averages (Table 4);.
+
+
+### Overall Engagement vs Performance
+
+::: {.callout-tip collapse="true"}
+## Using ggplot2 to create boxplot
+
+```{r}
+#| label: Overall Engagement and Performance
+#| echo: true
+#| code-overflow: wrap
+#| message: false
+#| warning: false
+#| paged-print: false
+
+# ------------------------------------------------------------
+# Visualise the relationship between Overall Engagement vs Performance: Building a boxplot with ggplot
+# ------------------------------------------------------------
+chart1<-df|>
+  filter(!is.na(Performance)) |> #ensures we remove any missing values
+  filter(!is.na(Engagement)) |> #ensures we remove any missing values
+  ggplot(aes(y=Engagement, x=Performance, colour=Performance))+
+  geom_boxplot(width = 0.45, outlier.alpha = 0.15, colour = "grey40") +
+  geom_jitter(width = 0.12, alpha = 0.08, size = 0.8, show.legend = FALSE) +
+  stat_summary(fun="mean", geom="point", size=2)+
+  stat_summary(fun.data = mean_cl_boot, geom = "errorbar", width=0.3, size=1.2, position = position_dodge())+
+  labs(x="Performance Group", y="Engagement Score", caption=("Number of observations: 1000")) +
+  theme_bw() + 
+  theme(plot.title = element_text(size=14, face="bold.italic"),
+        axis.title= element_text(size=14, face="bold"),
+        axis.text.x = element_text(size = 12, face="italic"),
+        axis.text.y=element_text(size=13, face="bold"),
+        legend.position = "none",
+        plot.caption = element_text(size=11, face="italic"),
+        panel.grid.major = element_blank(), panel.grid.minor = element_blank())+
+  scale_colour_brewer(palette = "Set2")+
+  ggtitle("Overall Engagement by Performance Group", 
+          subtitle = "(95% bootstrap confidence intervals for the mean)") 
+
+```
+::: 
+
+```{r}
+#| label: chart1
+#| fig-width: 9
+#| fig-height: 5
+#| fig-cap: "Overall Engagement by Performance Group (click the chart to enlarge)"
+#| fig-lightbox: true
+#| code-fold: true
+# ------------------------------------------------------------
+# Print the chart
+# ------------------------------------------------------------
+chart1
+
+```
+
+For the current dataset, **Engagement** differs significantly across performance groups (F(2,997)=22.50, p<.001, η²=0.04). High performers report higher engagement than both medium and low performers, with all pairwise differences statistically significant. However, the effect size is modest, suggesting engagement explains only a small share of performance differences.
+
+
+```{r}
+#| label: ANOVA table
+#| message: false
+#| warning: false
+#| paged-print: false
+#| code-fold: true
+# ------------------------------------------------------------
+# Create a summary table for ANOVA tests
+# ------------------------------------------------------------
+
+# ------------------------------------------------------------
+# Create a helper object for the summary table: eta-squared from aov object (one-way ANOVA)
+# ------------------------------------------------------------
+eta_sq_oneway <- function(fit) {
+  a <- summary(fit)[[1]]
+  ss_effect <- a[["Sum Sq"]][1]
+  ss_total  <- sum(a[["Sum Sq"]], na.rm = TRUE)
+  ss_effect / ss_total
+}
+
+# ------------------------------------------------------------
+# Create and format Table 3: ANOVA results (Driver-by-driver)
+# ------------------------------------------------------------
+anova_table <- bind_rows(lapply(drivers, function(d) {
+  f <- as.formula(paste(d, "~", group_var))
+  fit <- aov(f, data = df)
+  
+  a <- summary(fit)[[1]]
+  
+  tibble(
+    Driver = d,
+    df1 = a$Df[1],
+    df2 = a$Df[2],
+    F = a$`F value`[1],
+    p_value = a$`Pr(>F)`[1],
+    eta_sq = eta_sq_oneway(fit)
+  )
+})) %>%
+  arrange(p_value)
+
+kable(
+  anova_table,
+  digits = 4,
+  caption = "Table 3: One-way ANOVA results: Performance group differences by driver")
+
+```
+
+
+Perceived **Accomplishment** shows the strongest differences by performance group (F(2,997)=64.80, p<.001, η²=0.12). High performers report substantially higher accomplishment than medium and low performers, and medium performers also score higher than low performers.This represents a moderate effect, indicating accomplishment is closely associated with performance outcomes.
+
+**Manager relations** vary significantly by performance group (F(2,997)=9.48, p<.001, η²=0.02).
+Low performers report better manager relations than both medium and high performers, while no meaningful difference is observed between medium and high performers.Overall, the effect is small, suggesting limited practical impact despite statistical significance.
+
+Perceptions of **Rewards** differ significantly across performance groups (F(2,997)=14.75, p<.001, η²=0.03). High performers report higher rewards than both low and medium performers, while no significant difference is observed between low and medium performers. The effect size is also small.
+
+
+```{r}
+#| label: Post-hoc table
+#| message: false
+#| warning: false
+#| paged-print: false
+#| code-fold: true
+
+# ------------------------------------------------------------
+# Create and format Table 4: Tukey HSD post-hoc results (all drivers)
+# ------------------------------------------------------------
+tukey_table <- bind_rows(lapply(drivers, function(d) {
+  f <- as.formula(paste(d, "~", group_var))
+  fit <- aov(f, data = df)
+  tuk <- TukeyHSD(fit)
+  
+  broom::tidy(tuk) %>%
+    mutate(
+      Driver = d,
+      Comparison = contrast,
+      Difference = estimate,
+      CI_Lower = conf.low,
+      CI_Upper = conf.high,
+      p_adj = adj.p.value
+    ) %>%
+    select(Driver, Comparison, Difference, CI_Lower, CI_Upper, p_adj) %>%
+    arrange(p_adj)
+}))
+
+kable(
+  tukey_table,
+  digits = 4,
+  caption = "Table 4: Tukey HSD post-hoc pairwise comparisons (adjusted p-values)"
+)
+
+```
+
+### Visualising the results
+
+::: {.callout-tip collapse="true"}
+## Using ggplot2 to create a grid chart
+
+```{r}
+#| label: Overall Engagement and Engagement Drivers by Performance Group
+#| echo: true
+#| code-overflow: wrap
+#| message: false
+#| warning: false
+#| paged-print: false
+
+# ------------------------------------------------------------
+# Create and format a grid chart with 6 views:  95% confidence interval plots (Engagement + Engagement drivers) + ANOVA p-values + η²
+# ------------------------------------------------------------
+
+# ------------------------------------------------------------
+# Build a long format dataframe (via pivot_longer()) for faceting
+# ------------------------------------------------------------
+df_long <- df %>%
+  select(Performance, all_of(drivers)) %>%
+  pivot_longer(
+    cols = all_of(drivers),
+    names_to = "Driver",
+    values_to = "Score"
+  ) %>%
+  filter(!is.na(Performance), !is.na(Score)) %>%
+  mutate(Driver = factor(Driver, levels = drivers))
+
+# ------------------------------------------------------------
+# Build labels from previous ANOVA summary table (p + eta-squared)
+# ------------------------------------------------------------
+stats_labels <- anova_table %>%
+  select(Driver, p_value, eta_sq) %>%
+  mutate(
+    p_txt = ifelse(
+      p_value < 0.001,
+      "p < 0.001",
+      paste0("p = ", formatC(p_value, format = "f", digits = 3))
+    ),
+    eta_txt = paste0("\u03b7\u00b2 = ", formatC(eta_sq, format = "f", digits = 3)),
+    stat_label = paste0("ANOVA ", p_txt, "  |  ", eta_txt),
+    x = 1
+  )
+
+# ------------------------------------------------------------
+# Build a helper object for label positions per facet, so labels appear near the top of each panel
+# ------------------------------------------------------------
+
+y_pos <- df_long %>%
+  group_by(Driver) %>%
+  summarise(
+    y = max(Score, na.rm = TRUE),
+    .groups = "drop"
+  )
+
+stats_plot <- left_join(stats_labels, y_pos, by = "Driver")
+
+# ------------------------------------------------------------
+# Create and format the actual grid plot
+# ------------------------------------------------------------
+chart_grid <- ggplot(df_long, aes(x = Performance, y = Score, colour = Performance)) +
+  stat_summary(fun = "mean", geom = "point", size = 1.8) +
+  stat_summary(
+    fun.data = mean_cl_boot,
+    geom = "errorbar",
+    width = 0.25,
+    size = 0.9
+  ) +
+  facet_wrap(~ Driver, ncol = 3, scales = "free_y") +
+  geom_text(
+    data = stats_plot,
+    aes(x = x, y = y, label = stat_label),
+    inherit.aes = FALSE,
+    hjust = 0,
+    vjust = 1,
+    size = 3.3,
+    colour = "grey20"
+  ) +
+  labs(
+    x = "Performance Group",
+    y = "Score",
+    caption = "Note: Points show group means; error bars show 95% bootstrap confidence intervals."
+  ) +
+  ggtitle("Overall Engagement and Engagement Drivers by Performance Group", subtitle = "One-way ANOVA (Score ~ Performance) per panel. Effect size reported as \u03b7\u00b2.") +
+  theme_bw() +
+  theme(
+    strip.text = element_text(size = 12, face = "bold"),
+    axis.text.x = element_text(size = 10, face = "italic", angle = 15, hjust = 1),
+    axis.title = element_text(size = 13, face = "bold"),
+    plot.caption = element_text(size = 9, colour = "grey30"),
+    panel.grid.major = element_blank(),
+    panel.grid.minor = element_blank(),
+    legend.position = "none") +
+  scale_colour_brewer(palette = "Set2")+
+  scale_x_discrete(labels = c(
+    "Low performers" = "Low",
+    "Medium performers" = "Medium",
+    "High performers" = "High"))
+
+```
+:::
+
+
+```{r}
+#| label: chart_grid
+#| fig-width: 9
+#| fig-height: 5
+#| fig-cap: "Overall Engagement and Engagement Drivers by Performance Group (click the chart to enlarge)"
+#| fig-lightbox: true
+#| code-fold: true
+# ------------------------------------------------------------
+# Print the chart
+# ------------------------------------------------------------
+chart_grid
+
+```
+
+## Conclusion & Recommendations
+
+
+### Conclusion
+The results provide evidence of a performance culture in which higher performance is associated with higher engagement and a stronger sense of accomplishment. 
+
+However, the findings also point to potential imbalances. While top performers are rewarded more, medium performers (representing 52% of the workforce) do not appear to be clearly differentiated from low performers in terms of rewards. In addition, lower-performing employees report more positive manager relations, which may indicate that managerial attention is disproportionately focused on performance remediation rather than sustained engagement across all performance levels.
+
+### Recommendations
+
+- **Sustain engagement and accomplishment among top performers:**
+The strong association between performance, engagement, and accomplishment suggests that existing practices supporting autonomy, mastery, and meaningful work should be maintained and reinforced for high performers.
+- **Re-examine reward differentiation for medium performers:**
+The lack of meaningful reward differences between low and medium performers may weaken motivation in the middle of the performance distribution. Introducing clearer performance-linked recognition for medium performers could help prevent disengagement and performance stagnation.
+- **Balance managerial attention across performance groups:**
+While supporting low performers is important, the stronger manager relations reported by low performers suggest a potential over-correction. Managers should be encouraged to invest equally in coaching and development conversations with medium and high performers to sustain long-term engagement.
+- **Use engagement metrics as an early warning indicator:**
+Given the modest but consistent link between engagement and performance, monitoring engagement trends by performance group can help identify emerging misalignments between performance management practices and employee experience before they affect outcomes.

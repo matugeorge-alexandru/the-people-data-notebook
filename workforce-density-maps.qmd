@@ -1,0 +1,11 @@
+---
+title: "Visualising Workforce Density"
+---
+
+*Where does the workforce come from, and how can geography add context to people data?*
+
+::: callout-note
+🚧 **Content in progress**\
+This project will showcase how geospatial visualisations (e.g. maps) can be used to explore workforce distribution by country and nationality.\
+All examples will be built using synthetic data.
+:::

@@ -1,0 +1,11 @@
+---
+title: "Understanding Average Tenure and Retention Rate Trends"
+---
+
+*What do tenure and retention metrics really tell us over time?*
+
+::: callout-note
+🚧 **Content in progress**\
+This analysis will explore how average tenure and retention rates evolve, and how misinterpretation can lead to misleading conclusions.\
+All data will be synthetic.
+:::

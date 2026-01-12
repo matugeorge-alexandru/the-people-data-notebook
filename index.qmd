@@ -1,0 +1,53 @@
+---
+title: "The People Data Notebook"
+---
+
+This notebook showcases how employee and workforce data can be used to support better decisions about the most valuable resource of any organisation: its people.
+
+HR is often seen only as a support function, with an inherent desire to create useless administrative workload for the entire organisation and where decisions are driven by opinion rather than evidence. People analytics challenges these assumptions and shows how data-driven people decisions can be beneficial for both the organisations and the employees.
+
+If you are new to the field, it is worth mentioning that there are a lot of useful People Analytics & HR resources out there. See for example the <a href="https://www.aihr.com/blog/" style="color:#0066cc; font-weight:600;">Academy to Innovate HR blog</a> or the <a href="https://www.linkedin.com/newsletters/data-driven-hr-monthly-6793421002836590592/" style="color:#0066cc; font-weight:600;">Data Driven HR Monthly newsletter</a>, as well as some great books that showcase actual <strong>data projects</strong> in the field of people analytics:
+
+-   <a href="https://peopleanalytics-regression-book.org/" style="color:#0066cc; font-weight:600;">Handbook of Regression Modeling in People Analytics</a>\
+-   <a href="https://ona-book.org/" style="color:#0066cc; font-weight:600;">Handbook of Graphs and Networks in People Analytics</a>, both by Keith McNulty\
+-   <a href="https://rforhr.com/" style="color:#0066cc; font-weight:600;">R for HR: An Introduction to Human Resource Analytics Using R</a> by David Caughlin
+
+While designed as data analytics portfolio, through this website I hope to share a few practical examples of real HR business questions, contributing to the popularization of people analytics for better people decisions.
+
+::: callout-note
+## Disclaimer
+
+All examples use synthetic data. No real employee data is included.
+:::
+
+## Featured projects
+
+::::::: grid
+::: {.g-col-6 .card}
+[![](images/engagement-drivers.png)](engagement-drivers.qmd)
+
+[**Analyzing Employee Engagement Surveys: Main Drivers of Engagement**](engagement-drivers.qmd)\
+How do you choose action areas when all survey themes seem important?
+:::
+
+::: {.g-col-6 .card}
+[![](images/recruitment-capacity.png)](recruitment-capacity.qmd)
+
+[**Recruitment Capacity Model**](recruitment-capacity.qmd)\
+How many recruiters do you need for each department?
+:::
+
+::: {.g-col-6 .card}
+[![](images/performance-culture.png)](performance-culture-engagement.qmd)
+
+[**Building a Performance Culture I**](performance-culture-engagement.qmd)\
+Are your top performers more engaged?
+:::
+
+::: {.g-col-6 .card}
+[![](images/performance-culture-2.png)](performance-culture-rewards.qmd)
+
+[**Building a Performance Culture II**](performance-culture-rewards.qmd)\
+Are your top performers fairly rewarded?
+:::
+:::::::

@@ -1,0 +1,108 @@
+---
+title: "About"
+---
+
+Hi there, I’m **George-Alexandru Matu** and I currently work as a Senior People Data Analyst.
+
+I've decided to build **The People Data Notebook** for three main reasons:
+
+-   To serve as my data analytics portfolio website
+-   To popularize the field of people analytics among data enthusiasts and HR practitioners
+-   To share a few practical examples of real HR business questions, showcasing how using people analytics can lead to better decisions.
+
+My trajectory towards people analytics was somewhat atypical, as I have a **PhD in Sociology** and I initially dreamed of becoming a university professor. Although I truly enjoyed teaching and deep-diving into interesting research topics, I eventually decided that academia was not the right fit for me. People analytics felt like a natural career transition, as it allows me to continue analyzing survey responses, performing statistical analyses, working with qualitative data, and writing concise, actionable reports.
+
+As many other people data analysts, I work at the intersection of **data analytics, data science, data governance, and decision-making**.
+
+I’m originally from Romania but I currently live in Madrid, with my loving partner, Ada, and our cat, Vlahuta. Outside of work, I love to play chess, cook and take long walks.
+
+## Certifications
+
+::::::::::::::::::: cert-grid
+:::: cert-tile
+<a class="cert-link" href="assets/certificates/GeorgeMatu_DataAnalyst_R.pdf"> <img src="images/badges/datacamp.png" alt="DataCamp"/>
+
+::: cert-title
+Data Analyst with R (DataCamp)
+:::
+
+</a>
+::::
+
+:::: cert-tile
+<a class="cert-link" href="assets/certificates/GeorgeMatu_DataAnalyst_SQL.pdf"> <img src="images/badges/datacamp.png" alt="DataCamp"/>
+
+::: cert-title
+Data Analyst in SQL (DataCamp)
+:::
+
+</a>
+::::
+
+:::: cert-tile
+<a class="cert-link" href="assets/certificates/GeorgeMatu_AssociateDataScientist_R.pdf"> <img src="images/badges/datacamp.png" alt="DataCamp"/>
+
+::: cert-title
+Associate Data Scientist in R (DataCamp)
+:::
+
+</a>
+::::
+
+:::: cert-tile
+<a class="cert-link" href="https://www.coursera.org/account/accomplishments/specialization/certificate/EJCFLFRKB5P6"> <img src="images/badges/coursera.png" alt="Coursera"/>
+
+::: cert-title
+Google Data Analytics (Coursera)
+:::
+
+</a>
+::::
+
+:::: cert-tile
+<a class="cert-link" href="https://www.credly.com/badges/2a4062c7-49b5-4b65-bfbb-0c7ad4d308ff?source=linked_in_profile"> <img src="images/badges/tableau.png" alt="Tableau"/>
+
+::: cert-title
+Explore & Analyze Data (Tableau)
+:::
+
+</a>
+::::
+
+:::: cert-tile
+<a class="cert-link" href="https://www.credly.com/badges/0e5c4589-e7d0-4f58-a778-8f6617b12da4?source=linked_in_profile"> <img src="images/badges/tableau.png" alt="Tableau"/>
+
+::: cert-title
+Connect & Transform Data (Tableau)
+:::
+
+</a>
+::::
+
+:::: cert-tile
+<a class="cert-link" href="https://www.credly.com/badges/6dd04b75-8068-4bfb-9259-b91cc5223731?source=linked_in_profile"> <img src="images/badges/tableau.png" alt="Tableau"/>
+
+::: cert-title
+Create Views & Dashboards (Tableau)
+:::
+
+</a>
+::::
+
+:::: cert-tile
+<a class="cert-link" href="https://www.credly.com/badges/83a4999e-6e00-4008-8796-5dd3ca99264f?source=linked_in_profile"> <img src="images/badges/tableau.png" alt="Tableau"/>
+
+::: cert-title
+Publish & Manage Content (Tableau)
+:::
+
+</a>
+::::
+:::::::::::::::::::
+
+::: contact-box
+## Contact
+
+-   [Email me](mailto:matu.george@gmail.com)
+-   [Connect on LinkedIn](https://www.linkedin.com/in/geroge-matu/)
+:::

@@ -1,0 +1,11 @@
+---
+title: "Recruitment Capacity Model"
+---
+
+*How many recruiters do you need for each department?*
+
+::: callout-note
+🚧 **Content in progress**\
+This project will demonstrate how to model recruitment capacity using hiring demand, recruitment productivity and headcount trends.\
+All datasets will be synthetic and illustrative.
+:::
