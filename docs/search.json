@@ -95,14 +95,14 @@
     "href": "projects.html#case-studies",
     "title": "Projects",
     "section": "Case studies",
-    "text": "Case studies\n\n\nAnalyzing Employee Engagement Surveys: Main Drivers of Engagement\nHow do you choose action areas when all survey themes seem important?\nBuilding a Performance Culture I\nAre your top performers more engaged?\nBuilding a Performance Culture II\nAre your top performers fairly rewarded?\nRecruitment Capacity Model\nHow many recruiters do you need for each department?"
+    "text": "Case studies\n\n\nBuilding a Performance Culture I\nAre your top performers more engaged?"
   },
   {
     "objectID": "projects.html#coming-soon",
     "href": "projects.html#coming-soon",
     "title": "Projects",
     "section": "Coming soon",
-    "text": "Coming soon\n\nUnderstanding Average Tenure and Retention Rate Trends\nExploring how tenure distributions and retention metrics evolve over time.\nVisualising Workforce Density\nMapping workforce distribution by country and nationality using geospatial data."
+    "text": "Coming soon\n\nBuilding a Performance Culture II\nAre your top performers fairly rewarded?\nAnalyzing Employee Engagement Surveys: Main Drivers of Engagement\nHow do you choose action areas when all survey themes seem important?\nRecruitment Capacity Model\nHow many recruiters do you need for each department?\nUnderstanding Average Tenure and Retention Rate Trends\nExploring how tenure distributions and retention metrics evolve over time.\nVisualising Workforce Density\nMapping workforce distribution by country and nationality using geospatial data."
   },
   {
     "objectID": "workforce-density-maps.html",
@@ -137,6 +137,13 @@
     "href": "index.html#featured-projects",
     "title": "The People Data Notebook",
     "section": "Featured projects",
-    "text": "Featured projects\n\n\n\nAnalyzing Employee Engagement Surveys: Main Drivers of Engagement\nHow do you choose action areas when all survey themes seem important?\n\n\n\nRecruitment Capacity Model\nHow many recruiters do you need for each department?\n\n\n\nBuilding a Performance Culture I\nAre your top performers more engaged?\n\n\n\nBuilding a Performance Culture II\nAre your top performers fairly rewarded?"
+    "text": "Featured projects\n\n\nBuilding a Performance Culture I\nAre your top performers more engaged?"
+  },
+  {
+    "objectID": "index.html#comming-soon",
+    "href": "index.html#comming-soon",
+    "title": "The People Data Notebook",
+    "section": "Comming Soon",
+    "text": "Comming Soon\n\n\n\nAnalyzing Employee Engagement Surveys: Main Drivers of Engagement\nHow do you choose action areas when all survey themes seem important?\n\n\n\nRecruitment Capacity Model\nHow many recruiters do you need for each department?\n\n\n\nBuilding a Performance Culture II\nAre your top performers fairly rewarded?"
   }
 ]
