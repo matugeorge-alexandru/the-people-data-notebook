@@ -1,13 +1,773 @@
 ---
 title: "Building a Performance Culture II"
+subtitle: "Are your top performers fairly rewarded?"
+toc: true
+toc-title: "Contents:"
+toc-depth: 4
+format:
+  html:
+    lightbox: true
 ---
 
-*Are your top performers fairly rewarded?*
+![](images/performance-culture-2.png)
 
-::: callout-note
-🚧 **Content in progress**\
-This case study will look at reward differentiation, fairness, and performance signals, highlighting how data can inform compensation decisions responsibly.\
-All examples will rely on synthetic data.
+## Executive summary
+
+This case study provides step-by-step instructions in R on how to test whether the outcomes of an organisation’s compensation review process follow the **'pay-for-performance principle'**, using salary increases, equity awards, and total compensation increase as key indicators.
+
+## Context & Business Question
+
+(Annual) compensation review cycles play a critical role in how organisations attract and retain top talent. Beyond adjusting salaries in response to inflation and competitive pressures on the labour market, these cycles provide an opportunity to address any legacy issues, such as internal inequities, or employees being positioned too low within their salary ranges. 
+
+Equally important, **the Compensation Review process is a key mechanism for reinforcing a performance culture** within the organisation, by differentiating rewards based on employee performance. Therefore, throughout the comp review, one particularly relevant test for the entire process is to assess whether compensation outcomes vary systematically with performance levels.
+
+Business question: Do employees with higher performance ratings receive, on average, higher salary increases, equity awards, and total compensation growth compared to lower-performing peers?
+
+
+## Data Overview & Methodology
+
+### Data
+The analysis uses *fully synthetic data* for 1000 employees, including **employee level** data for **performance ratings** and **compensation review outcomes**. All data was generated in R.
+
+The database sample file includes the following columns:
+
+- PerformanceRatings: manager ratings of each employee, for a performance review cycle, scale 1-5, where 5 means a higher performance level;
+- SalaryIncrease:  percentage (%) increase of the annual salary for each employee (before vs. after comp review);
+- EquityIncrease:  percentage (%) increase of the equity or stocks awarded for each employee (before vs. after comp review);
+- TotalCompIncrease: annualized percentage (%) increase of the total compensation (salary + equity) for each employee (before vs. after comp review). Note, the equity awarded has a 4 year vesting period, as per the industry standard practice, so in the calculation of the Annualized Total Comp(%) increase, the Equity Increase is divided by 4. 
+- CompaRatioBefore: employee’s compa-ratio prior to the compensation review cycle
+- CompaRatioAfter: employee’s compa-ratio following the compensation review cycle, calculated based on the updated base salary after the applied salary increase.
+- **Note**: The compa-ratio represents the relationship between an employee’s base salary and the midpoint of the corresponding salary range. A value of 1.00 indicates alignment with the market median for the role, while values below or above 1.00 indicate positioning below or above the range midpoint, respectively. Compa-ratio is based on base salary only and does not reflect equity or other non-cash compensation components.
+
+### Methodology
+For testing the relationship between performance and compensation review outcomes, I conduct a series of one-way ANOVA tests, analyzing if a higher percentage increase in salary, equity or total compensation is reported among the top performing employees. 
+
+At the same time, to evaluate how compensation decisions affect employees’ positioning within their salary ranges, I analyze changes in compa-ratio before and after the compensation review cycle. Specifically, I compute within-employee compa-ratio deltas and assess whether the average magnitude of these changes differs across performance groups, using one-way ANOVA on compa-ratio changes complemented by paired comparisons.
+
+
+
+## Data Import and Transformations
+
+The first step is to import the needed R packages read the data file into our R environment.
+
+::: {.callout-tip collapse="true"}
+## Import R packages and dataframe
+```{r}
+#| label: Import libraries and data 
+#| echo: true
+#| message: false
+#| warning: false
+#| paged-print: false
+# ------------------------------------------------------------
+# Import needed R packages
+# ------------------------------------------------------------
+library(tidyverse) # 
+library(Hmisc) 
+library(broom)
+library(knitr)
+library(scales)
+
+# ------------------------------------------------------------
+# Read the data
+# ------------------------------------------------------------
+df_comp<-read_csv("data/performance_compensation_synthetic.csv")
+```
 :::
 
-Update test - Jan 2026
+We can take a quick look at our data using *glimpse()* or *summary()*. All  variables are looking as expected: numeric variables, with no extremely big outliers (see histograms). While the maximum equity increase reaches 75%, such values can reasonably occur in compensation reviews, where equity is frequently used as a targeted incentive for high performers or key talent.
+In addition, we can see that a significant number of employees show a 0% increase for salary, equity of total compensation, which is common in compensation review cycles due to eligibility criteria or imposed performance thresholds.
+
+
+```{r}
+#| label: Explore
+#| echo: true
+#| message: false
+#| warning: false
+#| paged-print: false
+#| code-fold: true
+
+# ------------------------------------------------------------
+# Explore the data structure
+# ------------------------------------------------------------
+glimpse(df_comp)
+```
+
+::: {.callout-tip collapse="true"}
+## Summary and checking outliers (histograms)
+
+```{r}
+#| label: Explore-and-Recode-2
+#| echo: true
+#| message: false
+#| warning: false
+#| paged-print: false
+
+# ------------------------------------------------------------
+# Summary for all variables
+# ------------------------------------------------------------
+summary(df_comp)
+
+# ------------------------------------------------------------
+# Histograms
+# ------------------------------------------------------------
+par(mfrow = c(1, 3))  # 1x3 grid
+
+hist(df_comp$SalaryIncrease, breaks = 15,
+     main = "Salary Increase (%)")
+
+hist(df_comp$EquityIncrease, breaks = 15,
+     main = "Equity Increase (%)")
+
+hist(df_comp$TotalCompIncrease, breaks = 15,
+     main = "Total Comp Increase (%)")
+```
+:::
+
+
+To simplify the interpretation of the ANOVA tests,one option is to reduce the number of performance groups from 5 to 3 groups, by joining together the 1 & 2 ratings ('Low Performers') and the 4 & 5 ratings ('High performers'), while the performance rating equals to 3 becomes 'Medium performers'. This decision is also supported by the overall performance distribution (Table 1), ensuring a big enough sample size in each group.
+
+However, in order to properly test that rewards are increasing with performance we might want to differentiate more clearly the reward distribution among top-performers (see the Analysis & Results section below) . 
+
+
+```{r}
+#| label: Explore and Recode 3
+#| echo: true
+#| message: false
+#| warning: false
+#| paged-print: false
+#| code-fold: true
+
+# ------------------------------------------------------------
+# Understand the performance distribution
+# ------------------------------------------------------------
+df_comp |>
+  count(PerformanceRatings) |>
+  mutate(Percentage = n / sum(n) * 100) |>
+  knitr::kable(
+    col.names = c("Performance rating", "Count", "Percentage (%)"),
+    digits = 1,
+    caption = "Table 1: Distribution of performance ratings")
+
+```
+
+One extra-step is to convert the grouping variable 'Performance' into a factor. We can also quickly check that the re-coding worked as intended.
+
+::: {.callout-tip collapse="true"}
+## Recode performance ratings (using case_when()) and validate re-coding
+
+```{r}
+#| label: Explore and Recode 4
+#| echo: true
+#| message: false
+#| warning: false
+#| code-overflow: wrap
+#| paged-print: false
+# ------------------------------------------------------------
+#  Re-code performance: form 1 to 5 into 3 performance categories
+# ------------------------------------------------------------
+df_comp <- df_comp |>
+  mutate(Performance = case_when(PerformanceRatings %in% c(1, 2) ~ "Low performers",
+                                 PerformanceRatings == 3         ~ "Medium performers",
+                                 PerformanceRatings %in% c(4, 5) ~ "High performers"))
+
+df_comp$Performance <- factor(df_comp$Performance, levels = c("Low performers", "Medium performers", "High performers"))
+
+```
+
+```{r}
+#| label: Explore and Recode III
+#| echo: true
+#| message: false
+#| warning: false
+#| paged-print: false
+
+# ------------------------------------------------------------
+# Validate the re-coding
+# ------------------------------------------------------------
+df_comp |>
+  select(PerformanceRatings, Performance) |>
+  head(5)
+
+```
+:::
+
+## Analysis & Results
+
+### Descriptive Statistics
+
+The descriptive statistics by performance group indicate that:
+
+- Average % increase for salary , equity awards, and annualized total compensation increases rise progressively from low to medium to high performers, consistent with a pay-for-performance structure.
+- Compa-ratios are comparable across performance groups prior to the review, but diverge afterward, with higher-performing employees showing greater upward movement within the salary range following the compensation review.
+
+
+
+```{r}
+#| label: Descriptive table
+#| message: false
+#| warning: false
+#| paged-print: false
+#| code-fold: true
+
+# ------------------------------------------------------------
+# Create and format Table 2: Descriptive Statistics (N, Mean, SD) by Performance group
+# ------------------------------------------------------------
+desc_table <- df_comp |>
+  select(
+    Performance,
+    SalaryIncrease,
+    EquityIncrease,
+    TotalCompIncrease,
+    CompaRatioBefore,
+    CompaRatioAfter) |>
+  pivot_longer(
+    cols = -Performance,
+    names_to = "Metric",
+    values_to = "Value") |>
+  group_by(Metric, Performance) |>
+  summarise(
+    N = sum(!is.na(Value)),
+    Mean = mean(Value, na.rm = TRUE),
+    SD = sd(Value, na.rm = TRUE),
+    .groups = "drop") |>
+  arrange(Metric, Performance)
+
+kable(
+  desc_table,
+  digits = 3,
+  caption = "Table 2:Descriptive statistics (N, Mean, SD) by Performance group")
+
+```
+In the next step, formal statistical testing using one-way ANOVA is conducted to assess whether these observed mean differences are statistically significant.
+
+
+### Compensation Review Outcomes vs Performance
+
+As previously mentioned, it is common in a comp review cycles to have a certain percentage of employees with a 0% increase (e.g. due to eligibility criteria). For this reason, in order to better illustrate the relationship between the outcomes of the compensation review process and performance we will exclude the employees with 0% increases from all the ANVOA tests conducted below.   
+
+#### Salary Increase (%) by Performance
+
+The one-way ANOVA shows a statistically significant difference in average salary increases across performance groups (F(2, 800) = 791.6, p < .001).  Only a very small number of low performers received a non-zero increase, indicating that most  performers were not eligible for salary adjustments, with only limited exceptions. 
+
+Focusing on the two main eligible groups, high performers received significantly higher salary increases than medium performers, as confirmed by post-hoc Tukey tests. 
+
+::: {.callout-tip collapse="true"}
+## Salary Increase (%) by Performance: R code for ANVOA
+```{r}
+#| label: Salary Increase by Performance
+#| echo: true
+#| message: false
+#| warning: false
+#| paged-print: false
+
+# ------------------------------------------------------------
+# 1) ANOVA: SalaryIncrease by Performance (exclude 0% salary increases)
+# ------------------------------------------------------------
+
+#Exclude employees with 0% Salary increase
+df_salary <- df_comp |>
+  filter(SalaryIncrease > 0)
+
+#Simple function for ANOVA test
+aov_salary <- aov(SalaryIncrease ~ Performance, data = df_salary)
+summary(aov_salary)
+
+#Descriptive table for comparing the means between the groups
+salary_means <- df_salary |>
+  group_by(Performance) |>
+  summarise(
+    N = n(),
+    MeanSalaryIncrease = mean(SalaryIncrease),
+    .groups = "drop")
+
+salary_means
+
+#Post-hoc test
+TukeyHSD(aov_salary)
+
+```
+:::
+
+::: {.callout-tip collapse="true"}
+## Salary Increase (%) vs Performance: R code for boxplot 
+
+```{r}
+#| label: Salary Increase (%) by Performance Group
+#| echo: true
+#| code-overflow: wrap
+#| message: false
+#| warning: false
+#| paged-print: false
+
+# ------------------------------------------------------------
+# Visualise the relationship between Salary Increase and Performance
+# ------------------------------------------------------------
+chart1<-df_salary|>
+  ggplot(aes(y=SalaryIncrease, x=Performance, colour=Performance))+
+  geom_boxplot(width = 0.45, outlier.alpha = 0.15, colour = "grey40") +
+  geom_jitter(width = 0.12, alpha = 0.08, size = 0.8, show.legend = FALSE) +
+  stat_summary(fun="mean", geom="point", size=2)+
+  stat_summary(fun.data = mean_cl_boot, geom = "errorbar", width=0.2, size=0.8, position = position_dodge())+
+  scale_y_continuous(labels = percent_format(accuracy = 1)) +
+  labs(x="Performance Group", y="Salary Increase (%)") +
+  theme_bw() + 
+  theme(plot.title = element_text(size=14, face="bold.italic"),
+        axis.title= element_text(size=14, face="bold"),
+        axis.text.x = element_text(size = 12, face="italic"),
+        axis.text.y=element_text(size=13, face="bold"),
+        legend.position = "none",
+        plot.caption = element_text(size=11, face="italic"),
+        panel.grid.major = element_blank(), panel.grid.minor = element_blank())+
+  scale_colour_brewer(palette = "Set2")+
+  ggtitle("Salary Increase (%) by Performance Group", 
+          subtitle = "(95% bootstrap confidence intervals for the mean)") 
+
+```
+:::
+
+```{r}
+#| label: chart1
+#| fig-width: 9
+#| fig-height: 5
+#| fig-cap: "Salary Increase (%) by Performance Group (click the chart to enlarge)"
+#| fig-lightbox: true
+#| code-fold: true
+# ------------------------------------------------------------
+# Print the chart
+# ------------------------------------------------------------
+chart1
+
+```
+
+
+#### Equity Increase (%) by Performance
+
+Similar to salary increases, the one-way ANOVA indicates statistically significant differences in equity award increases across performance groups (p < .001). Focusing on the main eligible groups, high performers received significantly larger equity awards than medium performers.
+
+::: {.callout-tip collapse="true"}
+## Equity Increase (%) by Performance: R code for ANVOA
+```{r}
+#| label: Equity Increase by Performance
+#| echo: true
+#| message: false
+#| warning: false
+#| paged-print: false
+
+# ------------------------------------------------------------
+# 2) ANOVA: EquityIncrease by Performance (exclude 0% equity increases)
+# ------------------------------------------------------------
+
+#Exclude employees with 0% Equity increase
+df_equity <- df_comp |>
+  filter(EquityIncrease > 0)
+
+#Simple function for ANOVA test
+aov_equity <- aov(EquityIncrease ~ Performance, data = df_equity)
+summary(aov_equity)
+
+#Descriptive table for comparing the means between the groups
+equity_means <- df_equity |>
+  group_by(Performance) |>
+  summarise(
+    N = n(),
+    MeanEquityIncrease = mean(EquityIncrease),
+    .groups = "drop")
+
+equity_means
+
+#Post-hoc test
+TukeyHSD(aov_equity)
+
+
+```
+:::
+
+::: {.callout-tip collapse="true"}
+## Equity Increase (%) vs Performance: R code for boxplot 
+
+```{r}
+#| label: Equity Increase (%) by Performance Group
+#| echo: true
+#| code-overflow: wrap
+#| message: false
+#| warning: false
+#| paged-print: false
+
+# ------------------------------------------------------------
+# Visualise the relationship between Equity Increase and Performance
+# ------------------------------------------------------------
+chart2<-df_equity|>
+  ggplot(aes(y=EquityIncrease, x=Performance, colour=Performance))+
+  geom_boxplot(width = 0.45, outlier.alpha = 0.15, colour = "grey40") +
+  geom_jitter(width = 0.12, alpha = 0.08, size = 0.8, show.legend = FALSE) +
+  stat_summary(fun="mean", geom="point", size=2)+
+  stat_summary(fun.data = mean_cl_boot, geom = "errorbar", width=0.2, size=0.8, position = position_dodge())+
+  scale_y_continuous(labels = percent_format(accuracy = 1)) +
+  labs(x="Performance Group", y="Equity Increase (%)") +
+  theme_bw() + 
+  theme(plot.title = element_text(size=14, face="bold.italic"),
+        axis.title= element_text(size=14, face="bold"),
+        axis.text.x = element_text(size = 12, face="italic"),
+        axis.text.y=element_text(size=13, face="bold"),
+        legend.position = "none",
+        plot.caption = element_text(size=11, face="italic"),
+        panel.grid.major = element_blank(), panel.grid.minor = element_blank())+
+  scale_colour_brewer(palette = "Set2")+
+  ggtitle("Equity Increase (%) by Performance Group", 
+          subtitle = "(95% bootstrap confidence intervals for the mean)") 
+
+```
+:::
+
+```{r}
+#| label: chart2
+#| fig-width: 9
+#| fig-height: 5
+#| fig-cap: "Equity Increase (%) by Performance Group (click the chart to enlarge)"
+#| fig-lightbox: true
+#| code-fold: true
+# ------------------------------------------------------------
+# Print the chart
+# ------------------------------------------------------------
+chart2
+
+```
+
+
+#### Annualised Total Compensation Increase (%) by Performance
+
+The one-way ANOVA shows a statistically significant difference in annualized total compensation increases across performance groups (p < .001). As with salary and equity, only a limited number of low performers received any increase.
+
+On average, medium performers received an annualized total compensation increase of approximately 8–9%, while high performers received increases closer to 14–15%, highlighting a clear and meaningful differentiation in overall rewards aligned with performance.
+
+::: {.callout-tip collapse="true"}
+## Annualised Total Comp Increase (%) by Performance: R code for ANVOA
+```{r}
+#| label: Total Comp Increase by Performance
+#| echo: true
+#| message: false
+#| warning: false
+#| paged-print: false
+
+# ------------------------------------------------------------
+# 3) ANOVA: TotalCompIncrease by Performance (exclude 0% total comp increases)
+# ------------------------------------------------------------
+
+#Exclude employees with 0% Total compensation increase
+df_total <- df_comp |>
+  filter(TotalCompIncrease > 0)
+
+#Simple function for ANOVA test
+aov_total <- aov(TotalCompIncrease ~ Performance, data = df_total)
+summary(aov_total)
+
+#Descriptive table for comparing the means between the groups
+total_means <- df_total |>
+  group_by(Performance) |>
+  summarise(
+    N = n(),
+    MeanTotalCompIncrease = mean(TotalCompIncrease),
+    .groups = "drop")
+
+total_means
+
+#Post-hoc test
+TukeyHSD(aov_total)
+
+```
+:::
+
+::: {.callout-tip collapse="true"}
+## Annualised Total Comp Increase (%) vs Performance: R code for boxplot 
+
+```{r}
+#| label: Total Comp Increase (%) by Performance Group
+#| echo: true
+#| code-overflow: wrap
+#| message: false
+#| warning: false
+#| paged-print: false
+
+# ------------------------------------------------------------
+# Visualise the relationship between Total Comp Increase and Performance
+# ------------------------------------------------------------
+chart3<-df_total|>
+  ggplot(aes(y=TotalCompIncrease, x=Performance, colour=Performance))+
+  geom_boxplot(width = 0.45, outlier.alpha = 0.15, colour = "grey40") +
+  geom_jitter(width = 0.12, alpha = 0.08, size = 0.8, show.legend = FALSE) +
+  stat_summary(fun="mean", geom="point", size=2)+
+  stat_summary(fun.data = mean_cl_boot, geom = "errorbar", width=0.2, size=0.8, position = position_dodge())+
+  scale_y_continuous(labels = percent_format(accuracy = 1)) +
+  labs(x="Performance Group", y="Total Comp (%)") +
+  theme_bw() + 
+  theme(plot.title = element_text(size=14, face="bold.italic"),
+        axis.title= element_text(size=14, face="bold"),
+        axis.text.x = element_text(size = 12, face="italic"),
+        axis.text.y=element_text(size=13, face="bold"),
+        legend.position = "none",
+        plot.caption = element_text(size=11, face="italic"),
+        panel.grid.major = element_blank(), panel.grid.minor = element_blank())+
+  scale_colour_brewer(palette = "Set2")+
+  ggtitle("Annualised Total Compensation Increase (%) by Performance Group", 
+          subtitle = "(95% bootstrap confidence intervals for the mean)") 
+
+```
+:::
+
+```{r}
+#| label: chart3
+#| fig-width: 9
+#| fig-height: 5
+#| fig-cap: "Annualised Total Compensation Increase (%) by Performance Group (click the chart to enlarge)"
+#| fig-lightbox: true
+#| code-fold: true
+# ------------------------------------------------------------
+# Print the chart
+# ------------------------------------------------------------
+chart3
+
+```
+
+
+
+#### High Performers deep-dive: Total Comp Increase (%) by Performance
+
+To further assess whether the compensation review outcomes support the development of a performance culture, this section examines whether meaningful differentiation exists within the top performance tier, comparing *Very good performers* (with a 4 rating) and *Excellent performers* (with a 5 rating).
+
+
+
+::: {.callout-tip collapse="true"}
+## High Performers deep-dive: R code for ANVOA
+```{r}
+#| label: High Performers deep-dive
+#| echo: true
+#| message: false
+#| warning: false
+#| paged-print: false
+
+# ------------------------------------------------------------
+# 4) ANOVA: High Performers deep-dive: 
+# ------------------------------------------------------------
+
+# Select high performers (ratings 4 and 5) and recode rating as a factor
+df_total_45 <- df_comp |>
+  filter(PerformanceRatings %in% c(4, 5)) |>
+  filter(TotalCompIncrease > 0) |>
+  mutate(
+    Rating45 = factor(PerformanceRatings, levels = c(4, 5)))
+
+# Simple function for ANOVA test
+aov_total_45 <- aov(TotalCompIncrease ~ Rating45, data = df_total_45)
+summary(aov_total_45)
+
+# Descriptive table for comparing the means between the groups
+total_means_45 <- df_total_45 |>
+  group_by(Rating45) |>
+  summarise(
+    N = n(),
+    MeanTotalCompIncrease = mean(TotalCompIncrease),
+    .groups = "drop")
+
+total_means_45
+
+```
+:::
+
+::: {.callout-tip collapse="true"}
+## High Performers deep-dive: R code for boxplot 
+
+```{r}
+#| label: High Performers deep-dive - boxplot
+#| echo: true
+#| code-overflow: wrap
+#| message: false
+#| warning: false
+#| paged-print: false
+
+# ------------------------------------------------------------
+# Visualize the relationship between Total Comp Increase and Performance for high performers
+# ------------------------------------------------------------
+
+#Create a new variable that caputres labesl for 4 & 5 levels of perormance
+df_total_45 <- df_total_45 |>
+  mutate(RatingLabel = case_when(Rating45==4 ~ "Very good performer",
+                                 Rating45==5 ~ "Excellent performer"))
+
+#Convert the new variable to factor
+df_total_45 <- df_total_45 |>
+  mutate(RatingLabel = factor(RatingLabel,
+      levels = c("Very good performer", "Excellent performer")))
+
+
+chart4<-df_total_45|>
+  ggplot(aes(y=TotalCompIncrease, x=RatingLabel, colour=RatingLabel))+
+  geom_boxplot(width = 0.45, outlier.alpha = 0.15, colour = "grey40") +
+  geom_jitter(width = 0.12, alpha = 0.08, size = 0.8, show.legend = FALSE) +
+  stat_summary(fun="mean", geom="point", size=2)+
+  stat_summary(fun.data = mean_cl_boot, geom = "errorbar", width=0.2, size=0.8, position = position_dodge())+
+  scale_y_continuous(labels = percent_format(accuracy = 1)) +
+  labs(x="Performance Group", y="Total Comp (%)") +
+  theme_bw() + 
+  theme(plot.title = element_text(size=14, face="bold.italic"),
+        axis.title= element_text(size=14, face="bold"),
+        axis.text.x = element_text(size = 12, face="italic"),
+        axis.text.y=element_text(size=13, face="bold"),
+        legend.position = "none",
+        plot.caption = element_text(size=11, face="italic"),
+        panel.grid.major = element_blank(), panel.grid.minor = element_blank())+
+  scale_colour_brewer(palette = "Set2")+
+  ggtitle("High Performers deep-dive: Annualised Total Comp Increase (%) by Performance Group", 
+          subtitle = "(95% bootstrap confidence intervals for the mean)") 
+
+```
+:::
+
+```{r}
+#| label: chart4
+#| fig-width: 9
+#| fig-height: 5
+#| fig-cap: "High Performers deep-dive:Annualised Total Comp Increase (%) by Performance Group (click the chart to enlarge)"
+#| fig-lightbox: true
+#| code-fold: true
+# ------------------------------------------------------------
+# Print the chart
+# ------------------------------------------------------------
+chart4
+
+```
+
+Among high performers, the one-way ANOVA shows no statistically significant difference in average annualized total compensation increases between *Very good performers* and *Excellent performers* (F(1, 298) = 1.23, p = .27). The average increase is very similar across the two groups (14.3% vs 14.9%), with substantial overlap in their distributions. This result indicates limited differentiation in total compensation outcomes among top performers.
+
+
+
+#### Changes in Compa-Ratio
+
+To assess the impact of the compensation review process on employees’ salary positioning, another analysis looks at Compa-Ratio before and after the comp review. Because compa-ratio is measured for the same employees at two points in time, the analysis uses paired t-tests (within-employee comparisons) to test whether compa-ratio changed after the review overall and within each performance group. In addition, a delta compa-ratio (After − Before) is calculated to summarize the magnitude and direction of movement within the salary range.
+
+
+::: {.callout-tip collapse="true"}
+## Changes in Compa-Ratio: R code for paired t-tests
+```{r}
+#| label: Changes in Compa-Ratio
+#| echo: true
+#| message: false
+#| warning: false
+#| paged-print: false
+# ------------------------------------------------------------
+# Compa-ratio analysis: Before vs After compensation review
+# Method: paired t-tests (within-employee) + delta compa-ratio descriptives
+# ------------------------------------------------------------
+
+library(dplyr)
+
+# 1) Create compa-ratio change (delta)
+df_comp_adj <- df_comp |>
+  mutate(CompaRatioDelta = CompaRatioAfter - CompaRatioBefore)|>
+  filter(SalaryIncrease > 0)
+
+# 2) Overall paired test (all employees)
+t.test(
+  df_comp_adj $CompaRatioAfter,
+  df_comp_adj $CompaRatioBefore,
+  paired = TRUE)
+
+
+# 3) Paired t-tests by Performance group
+
+d_low    <- df_comp_adj  |> filter(Performance == "Low performers")
+d_medium <- df_comp_adj  |> filter(Performance == "Medium performers")
+d_high   <- df_comp_adj  |> filter(Performance == "High performers")
+
+t.test(d_low$CompaRatioAfter,    d_low$CompaRatioBefore,    paired = TRUE)
+t.test(d_medium$CompaRatioAfter, d_medium$CompaRatioBefore, paired = TRUE)
+t.test(d_high$CompaRatioAfter,   d_high$CompaRatioBefore,   paired = TRUE)
+
+
+# 4) Descriptive statistics for compa-ratio movement
+compa_summary <- df_comp_adj  |>
+  group_by(Performance) |>
+  summarise(
+    N = n(),
+    MeanCompaRatioBefore = mean(CompaRatioBefore, na.rm = TRUE),
+    MeanCompaRatioAfter  = mean(CompaRatioAfter, na.rm = TRUE),
+    MeanDelta            = mean(CompaRatioDelta, na.rm = TRUE),
+    SDDelta              = sd(CompaRatioDelta, na.rm = TRUE),
+    .groups = "drop")
+
+compa_summary
+
+
+```
+:::
+
+::: {.callout-tip collapse="true"}
+## Changes in Compa-Ratio: R code for boxplot 
+
+```{r}
+#| label: Changes in Compa-Ratio - boxplot
+#| echo: true
+#| code-overflow: wrap
+#| message: false
+#| warning: false
+#| paged-print: false
+
+chart5<-df_comp_adj |>
+  ggplot(aes(y=CompaRatioDelta, x=Performance, colour=Performance))+
+  geom_boxplot(width = 0.45, outlier.alpha = 0.15, colour = "grey40") +
+  geom_jitter(width = 0.12, alpha = 0.08, size = 0.8, show.legend = FALSE) +
+  stat_summary(fun="mean", geom="point", size=2)+
+  stat_summary(fun.data = mean_cl_boot, geom = "errorbar", width=0.2, size=0.8, position = position_dodge())+
+  scale_y_continuous(labels = percent_format(accuracy = 1)) +
+  labs(x="Performance Group", y="Changes in Compa-Ratio") +
+  theme_bw() + 
+  theme(plot.title = element_text(size=14, face="bold.italic"),
+        axis.title= element_text(size=14, face="bold"),
+        axis.text.x = element_text(size = 12, face="italic"),
+        axis.text.y=element_text(size=13, face="bold"),
+        legend.position = "none",
+        plot.caption = element_text(size=11, face="italic"),
+        panel.grid.major = element_blank(), panel.grid.minor = element_blank())+
+  scale_colour_brewer(palette = "Set2")+
+  ggtitle("Changes in Compa-Ratio by Performance Group", 
+          subtitle = "(95% bootstrap confidence intervals for the mean)") 
+
+
+```
+:::
+
+```{r}
+#| label: chart5
+#| fig-width: 9
+#| fig-height: 5
+#| fig-cap: "Compa-ratio change by Performance Group (click the chart to enlarge)"
+#| fig-lightbox: true
+#| code-fold: true
+# ------------------------------------------------------------
+# Print the chart
+# ------------------------------------------------------------
+chart5
+
+```
+The results show a statistically significant increase in compa-ratio following the compensation review across all performance groups. On average, medium performers experienced an increase of approximately 5.0 percentage points, while high performers saw a larger average increase of around 7.8 percentage points, indicating stronger upward movement within the salary range for higher performers. Although only a small number of low performers received salary adjustments, those who did also showed a modest but statistically significant increase in compa-ratio. Overall, these findings suggest that the compensation review process not only differentiated reward levels, but also systematically improved salary positioning in line with performance, reinforcing a pay-for-performance structure.
+
+
+
+## Conclusion & Recommendations
+
+### Conclusion
+
+The results provide strong evidence that the compensation review process broadly follows a pay-for-performance principle. Higher-performing employees receive larger salary increases, equity awards, and annualized total compensation growth, and also experience greater upward movement within the salary range, as reflected in compa-ratio changes. The analysis further shows that most low performers are excluded from compensation increases (with only a small number of exceptions). 
+
+However, a deeper examination within the top performance tier reveals no statistically significant differences between performance ratings 4 and 5, suggesting that differentiation among top performers may be more limited than expected.
+
+
+### Recommendations
+
+- **Review reward differentiation within the top performance tier**: The absence of meaningful differences between ratings 4 and 5 was identified through analysis rather than design assumptions. Organisations may wish to assess whether this level of differentiation aligns with their intended performance philosophy or whether additional mechanisms are needed to recognise exceptional performance.
+
+- **Formalise eligibility criteria for low performers**: While the general exclusion of low performers from increases is consistent with performance-based rewards, the presence of exceptions highlights the need for clear and consistently applied eligibility guidelines.
+
+- **Continue complementing compensation increase metrics with compa-ratio analysis**: Reviewing both annual increases and resulting salary positioning helps ensure that compensation decisions remain aligned with performance incentives while supporting sustainable, long-term pay structures
+
+
+

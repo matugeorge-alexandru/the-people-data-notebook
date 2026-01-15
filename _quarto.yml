@@ -4,6 +4,7 @@ project:
 
 website:
   title: "The People Data Notebook"
+
   navbar:
     pinned: true
     left:
@@ -13,6 +14,7 @@ website:
         text: Projects
       - href: about.qmd
         text: About
+
 
 format:
   html:
@@ -26,3 +28,6 @@ format:
 editor: visual
 
 search: true
+
+page-meta:
+  google-site-verification: "google2e4bb7858e22aa8f"

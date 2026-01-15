@@ -2,6 +2,8 @@
 title: "Building a Performance Culture I"
 subtitle: "Are your top performers more engaged?"
 toc: true
+toc-title: "Contents:"
+toc-depth: 4
 format:
   html:
     lightbox: true
@@ -21,6 +23,8 @@ This means that the relationship between engagement and performance can represen
 
 ## Data Overview & Methodology
 
+### Data
+
 The analysis uses *fully synthetic data* for 1000 employees, including **employee level** data for **performance ratings** and **engagement survey responses**. All data was generated in R.
 
 The database sample file includes the following columns:
@@ -33,14 +37,19 @@ The database sample file includes the following columns:
 -   Goals: driver of engagement measuring employee clarity of their work goals, average of multiple questions, NPS scale 0-10;
 -   PeerSupport: driver of engagement measuring employee satisfaction with peer support they receive from the team, average of multiple questions, NPS scale 0-10;
 
+### Methodology
+
 For testing the relationship between engagement and performance I conduct a series of one-way ANOVA tests, analyzing if a more positive employee sentiment (overall Engagement and other drivers of engagement) is reported among the top performing employees.
 
 ## Data Import and Transformations
 
 First things first: we just need to import the needed packages/ libraries and read the .csv file into our R environment.
 
+::: {.callout-tip collapse="true"}
+## Import R packages and dataframe
+
 ```{r}
-#| label: Import libraries
+#| label: Import libraries and data 
 #| echo: true
 #| message: false
 #| warning: false
@@ -52,24 +61,17 @@ library(tidyverse)
 library(Hmisc) 
 library(broom)
 library(knitr)
-```
-
-```{r}
-#| label: Read data
-#| echo: true
-#| message: false
-#| warning: false
-#| paged-print: false
 
 # ------------------------------------------------------------
 # Read the data
 # ------------------------------------------------------------
 df<-read_csv("data/performance_engagement_synthetic.csv")
 ```
+:::
 
 A quick glimpse at our data shows us that all our employee engagement survey variables are looking as expected: numeric variables, on a 0-10 scale.
 
-To simplify the interpretation of the ANOVA tests, we can reduce the number of performance groups from 5 to 3 groups, by joining together the 1 & 2 ratings ('Low Performers') and the 4 & 5 ratings ('High performers'), while the performance rating equals to 3 becomes 'Medium performers'. This decision is also supported by the overall performance distribution (18% Low performers, 52% Medium performers, 30% High performers), ensuring a big enoug sample size in each group.
+To simplify the interpretation of the ANOVA tests, we can reduce the number of performance groups from 5 to 3 groups, by joining together the 1 & 2 ratings ('Low Performers') and the 4 & 5 ratings ('High performers'), while the performance rating equals to 3 becomes 'Medium performers'. This decision is also supported by the overall performance distribution (18% Low performers, 52% Medium performers, 30% High performers), ensuring a big enough sample size in each group.
 
 ```{r}
 #| label: Explore and Recode
@@ -125,7 +127,7 @@ df |>
 One important step for an ANOVA test is to clearly define the groups among which we will be doing the comparisons. In R, the easiest way to do this is to convert the variable of interest 'Performance' into a factor. We can also quickly check that the re-coding worked as intended.
 
 ::: {.callout-tip collapse="true"}
-## Recode performance ratings and validate re-coding
+## Recode performance ratings (using ifelse()) and validate re-coding
 
 ```{r}
 #| label: Explore and Recode 4
@@ -161,7 +163,7 @@ df |>
 ```
 :::
 
-## Data Analysis & Results
+## Analysis & Results
 
 ### Descriptive Statistics
 
@@ -169,8 +171,8 @@ While in this case the purpose and methods of the analysis were pre-defined, it 
 
 The average engagement scores by performance groups shows that:
 
--   for Overall Engagement and Accomplishment, engagement increases with Performance;
--   for Goals and Peer Support, the averages are quite similar across Low, Medium and High performers;
+-   For Overall Engagement and Accomplishment, engagement increases with Performance;
+-   For Goals and Peer Support, the averages are quite similar across Low, Medium and High performers;
 -   Low performers are on average more satisfied with their Manager Relation, compared to the other performance groups;
 -   High performers are on average more satisfied with their Rewards, compared to the employees in the other performance groups.
 

@@ -7,19 +7,19 @@ This page contains a selection of people analytics case studies.....
 ## Case studies
 
 ::: projects-list
-
 -   [Building a Performance Culture I](performance-culture-engagement.qmd)\
     *Are your top performers more engaged?*
+    
+-   [Building a Performance Culture II](performance-culture-rewards.qmd)\
+    *Are your top performers fairly rewarded?*    
+    
 :::
 
 ## Coming soon
 
--   [Building a Performance Culture II](performance-culture-rewards.qmd)\
-    *Are your top performers fairly rewarded?*
-
 -   [Analyzing Employee Engagement Surveys: Main Drivers of Engagement](engagement-drivers.qmd)\
     *How do you choose action areas when all survey themes seem important?*
-    
+
 -   [Recruitment Capacity Model](recruitment-capacity.qmd)\
     *How many recruiters do you need for each department?*
 

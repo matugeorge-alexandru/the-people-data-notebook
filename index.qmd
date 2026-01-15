@@ -22,6 +22,7 @@ All examples use synthetic data. No real employee data is included.
 
 ## Featured projects
 
+:::::: grid
 ::: {.g-col-6 .card}
 [![](images/performance-culture.png)](performance-culture-engagement.qmd)
 
@@ -29,9 +30,18 @@ All examples use synthetic data. No real employee data is included.
 Are your top performers more engaged?
 :::
 
+::: {.g-col-6 .card}
+[![](images/performance-culture-2.png)](performance-culture-rewards.qmd)
+
+[**Building a Performance Culture II**](performance-culture-rewards.qmd)\
+Are your top performers fairly rewarded?
+:::
+
+::::::
+
 ## Comming Soon
 
-::::::: grid
+:::::: grid
 ::: {.g-col-6 .card}
 [![](images/engagement-drivers.png)](engagement-drivers.qmd)
 
@@ -46,12 +56,4 @@ How do you choose action areas when all survey themes seem important?
 How many recruiters do you need for each department?
 :::
 
-
-
-::: {.g-col-6 .card}
-[![](images/performance-culture-2.png)](performance-culture-rewards.qmd)
-
-[**Building a Performance Culture II**](performance-culture-rewards.qmd)\
-Are your top performers fairly rewarded?
-:::
-:::::::
+::::::
