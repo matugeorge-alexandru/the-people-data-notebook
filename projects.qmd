@@ -2,17 +2,16 @@
 title: "Projects"
 ---
 
-This page contains a selection of people analytics case studies.....
+In this page you can find a selection of case studies exploring how people data can be used to inform organisational decisions across areas such as employee engagement, performance management, rewards, attrition, workforce planning etc.
 
 ## Case studies
 
 ::: projects-list
 -   [Building a Performance Culture I](performance-culture-engagement.qmd)\
     *Are your top performers more engaged?*
-    
+
 -   [Building a Performance Culture II](performance-culture-rewards.qmd)\
-    *Are your top performers fairly rewarded?*    
-    
+    *Are your top performers fairly rewarded?*
 :::
 
 ## Coming soon

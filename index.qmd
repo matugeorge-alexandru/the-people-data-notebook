@@ -1,7 +1,5 @@
 ---
 title: "The People Data Notebook"
-metadata:
-  google-site-verification: "gMiHIV-1wOkOkLHZYPUEN122rYxP0UtyxpYJ6tJN1ME"
 ---
 
 This notebook showcases how employee and workforce data can be used to support better decisions about the most valuable resource of any organisation: its people.
