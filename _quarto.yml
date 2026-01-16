@@ -18,6 +18,8 @@ website:
 
 format:
   html:
+   metadata:
+    google-site-verification: "gMiHIV-1wOkOkLHZYPUEN122rYxP0UtyxpYJ6tJN1ME"
     theme:
       - flatly
       - brand
