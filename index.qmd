@@ -1,5 +1,7 @@
 ---
 title: "The People Data Notebook"
+metadata:
+  google-site-verification: "gMiHIV-1wOkOkLHZYPUEN122rYxP0UtyxpYJ6tJN1ME"
 ---
 
 This notebook showcases how employee and workforce data can be used to support better decisions about the most valuable resource of any organisation: its people.
@@ -22,7 +24,7 @@ All examples use synthetic data. No real employee data is included.
 
 ## Featured projects
 
-:::::: grid
+::::: grid
 ::: {.g-col-6 .card}
 [![](images/performance-culture.png)](performance-culture-engagement.qmd)
 
@@ -36,12 +38,11 @@ Are your top performers more engaged?
 [**Building a Performance Culture II**](performance-culture-rewards.qmd)\
 Are your top performers fairly rewarded?
 :::
-
-::::::
+:::::
 
 ## Comming Soon
 
-:::::: grid
+::::: grid
 ::: {.g-col-6 .card}
 [![](images/engagement-drivers.png)](engagement-drivers.qmd)
 
@@ -55,5 +56,4 @@ How do you choose action areas when all survey themes seem important?
 [**Recruitment Capacity Model**](recruitment-capacity.qmd)\
 How many recruiters do you need for each department?
 :::
-
-::::::
+:::::
