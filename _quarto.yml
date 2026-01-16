@@ -6,6 +6,8 @@ project:
 
 website:
   title: "The People Data Notebook"
+  site-url: https://matugeorge-alexandru.github.io/the-people-data-notebook
+  
 
   navbar:
     pinned: true
