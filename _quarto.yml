@@ -1,6 +1,8 @@
 project:
   type: website
   output-dir: docs
+  resources:
+  - google2e4bb7858e22aa8f.html
 
 website:
   title: "The People Data Notebook"
